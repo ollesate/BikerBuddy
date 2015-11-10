@@ -30,11 +30,19 @@ import java.util.ArrayList;
 public class AsynchTaskURL extends AsyncTask<String, String, String> {
 
 //        private ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
-        private InputStream inputStream = null;
-        private String result = "";
+    private InputStream inputStream = null;
+    private String result = "";
+    private String destination;
+    private String origin;
 
     public AsynchTaskURL(OnResultListener listener){
         this.onResultListener = listener;
+    }
+
+    public AsynchTaskURL(OnResultListener listener, String origin, String destination){
+        this.onResultListener = listener;
+        this.origin = origin;
+        this.destination = destination;
     }
 
         protected void onPreExecute() {
@@ -50,8 +58,11 @@ public class AsynchTaskURL extends AsyncTask<String, String, String> {
     @Override
     protected String doInBackground(String... params) {
 
-        String url_select = params[0];
-        int length = params.length;
+        String url_select = "";
+
+        for(int i = 0; i < params.length; i++){
+            url_select += params[i];
+        }
 
         ArrayList<NameValuePair> param = new ArrayList<NameValuePair>();
 
@@ -86,7 +97,7 @@ public class AsynchTaskURL extends AsyncTask<String, String, String> {
             BufferedReader bReader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"), 8);
             StringBuilder sBuilder = new StringBuilder();
 
-            String line = null;
+            String line;
             while ((line = bReader.readLine()) != null) {
                 sBuilder.append(line + "\n");
             }
@@ -139,7 +150,7 @@ public class AsynchTaskURL extends AsyncTask<String, String, String> {
 
     private OnResultListener onResultListener;
 
-    interface OnResultListener{
+    public interface OnResultListener{
         public void OnResult(ArrayList<Direction> dirs);
     }
 

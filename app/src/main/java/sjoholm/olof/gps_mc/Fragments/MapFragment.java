@@ -1,4 +1,4 @@
-package sjoholm.olof.gps_mc;
+package sjoholm.olof.gps_mc.Fragments;
 
 
 import android.app.Activity;
@@ -21,14 +21,17 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
+import sjoholm.olof.gps_mc.Direction;
+import sjoholm.olof.gps_mc.R;
+
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class mapFragment extends Fragment {
+public class MapFragment extends Fragment {
 
 
-    public mapFragment() {
+    public MapFragment() {
         // Required empty public constructor
     }
 

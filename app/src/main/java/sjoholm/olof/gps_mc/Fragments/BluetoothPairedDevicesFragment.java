@@ -1,4 +1,4 @@
-package sjoholm.olof.gps_mc;
+package sjoholm.olof.gps_mc.Fragments;
 
 
 import android.bluetooth.BluetoothAdapter;
@@ -16,6 +16,8 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.Set;
+
+import sjoholm.olof.gps_mc.R;
 
 
 /**

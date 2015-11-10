@@ -10,7 +10,7 @@ import org.json.JSONObject;
 /**
  * Created by w1 on 2015-09-23.
  */
-class Direction{
+public class Direction{
 
     private String distanceText;
     private int distanceValue;

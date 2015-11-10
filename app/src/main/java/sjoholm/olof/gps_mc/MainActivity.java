@@ -16,13 +16,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.provider.Settings;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,9 +37,9 @@ public class MainActivity extends ActionBarActivity {
         //manager = (LocationManager) getSystemService(LOCATION_SERVICE);
         //replaceFragment(new BluetoothPairedDevicesFragment());
 
-        MyGPSTracker.getInstance(this);
+        GPSTracker.Singleton.getInstance(this);
 
-        replaceFragment(new autocompleteFragment());
+        replaceFragment(new AutocompleteFragment());
 
         //replaceFragment(new googleMapFragment());
 

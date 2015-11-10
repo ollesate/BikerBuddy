@@ -1,4 +1,4 @@
-package sjoholm.olof.gps_mc;
+package sjoholm.olof.gps_mc.Fragments;
 
 
 import android.content.Context;
@@ -29,6 +29,9 @@ import com.google.maps.android.PolyUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import sjoholm.olof.gps_mc.Direction;
+import sjoholm.olof.gps_mc.R;
 
 
 /**

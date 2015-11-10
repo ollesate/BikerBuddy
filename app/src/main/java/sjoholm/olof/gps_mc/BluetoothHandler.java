@@ -15,8 +15,13 @@ import java.util.UUID;
 public class BluetoothHandler {
 
     public BluetoothHandler(BluetoothDevice device){
-        startBluetooth(device);
+        Connect(device);
     }
+
+    public BluetoothHandler(){
+
+    }
+
 
     public void send(String message){
         if(connection != null) {
@@ -26,10 +31,17 @@ public class BluetoothHandler {
     }
 
 
-    private void startBluetooth(BluetoothDevice bluetoothDevice) {
-
+    public void Connect(BluetoothDevice bluetoothDevice) {
         new Thread(new ConnectThread(bluetoothDevice)).start();
+    }
 
+    public  void Disconnect(){
+        if(connection != null)
+            connection.cancel();
+    }
+
+    public boolean isConnected(){
+        return false;
     }
 
     private class ConnectThread extends Thread {

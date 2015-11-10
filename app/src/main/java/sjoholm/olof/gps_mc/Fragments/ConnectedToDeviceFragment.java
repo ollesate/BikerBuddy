@@ -1,4 +1,4 @@
-package sjoholm.olof.gps_mc;
+package sjoholm.olof.gps_mc.Fragments;
 
 
 import android.bluetooth.BluetoothDevice;
@@ -16,6 +16,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.UUID;
+
+import sjoholm.olof.gps_mc.AsynchTaskURL;
+import sjoholm.olof.gps_mc.Direction;
+import sjoholm.olof.gps_mc.R;
 
 
 /**

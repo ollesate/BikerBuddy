@@ -1,4 +1,4 @@
-package sjoholm.olof.gps_mc;
+package sjoholm.olof.gps_mc.Fragments;
 
 
 import android.bluetooth.BluetoothDevice;
@@ -21,6 +21,9 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
 import java.util.UUID;
+
+import sjoholm.olof.gps_mc.GPSTracker;
+import sjoholm.olof.gps_mc.R;
 
 
 /**

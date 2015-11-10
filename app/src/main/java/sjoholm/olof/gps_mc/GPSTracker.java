@@ -220,4 +220,26 @@ public class GPSTracker extends Service implements LocationListener {
     public void setListener(LocationSource.OnLocationChangedListener listener) {
         this.listener = listener;
     }
+
+    /**
+     * Created by w1 on 2015-10-05.
+     */
+    public static class Singleton {
+
+        private static GPSTracker gpsTracker = null;
+
+        private Singleton(Context context){
+            gpsTracker = new GPSTracker(context);
+        }
+
+        public static GPSTracker getInstance(Context context) {
+
+            if(gpsTracker == null){
+                gpsTracker = new GPSTracker(context);
+            }
+
+            return gpsTracker;
+        }
+
+    }
 }

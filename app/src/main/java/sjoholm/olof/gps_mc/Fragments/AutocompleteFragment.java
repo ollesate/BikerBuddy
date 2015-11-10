@@ -1,4 +1,4 @@
-package sjoholm.olof.gps_mc;
+package sjoholm.olof.gps_mc.Fragments;
 
 
 import android.bluetooth.BluetoothAdapter;
@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,22 +32,25 @@ import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Set;
 
+import sjoholm.olof.gps_mc.AsynchTaskURL;
+import sjoholm.olof.gps_mc.BluetoothHandler;
+import sjoholm.olof.gps_mc.Direction;
+import sjoholm.olof.gps_mc.GPSTracker;
+import sjoholm.olof.gps_mc.PlaceAutocompleteAdapter;
+import sjoholm.olof.gps_mc.R;
+
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class autocompleteFragment extends Fragment
+public class AutocompleteFragment extends Fragment
         implements GoogleApiClient.OnConnectionFailedListener{
 
 
@@ -76,8 +78,8 @@ public class autocompleteFragment extends Fragment
 
     private GPSTracker gps;
 
-    public autocompleteFragment() {
-        gps = MyGPSTracker.getInstance(getActivity());
+    public AutocompleteFragment() {
+        gps = GPSTracker.Singleton.getInstance(getActivity());
         gps.setListener(new LocationSource.OnLocationChangedListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -130,14 +132,14 @@ public class autocompleteFragment extends Fragment
             });
         }
         if(mapFragment == null){
-            mapFragment = new mapFragment();
+            mapFragment = new MapFragment();
         }
         setLayoutToFragment(witchFragment);
         return inflater.inflate(R.layout.fragment_autocomplete, container, false);
     }
 
     private googleMapFragment googleMapFragment;
-    private mapFragment mapFragment;
+    private MapFragment mapFragment;
 
     private int witchFragment = 1;
 
@@ -172,7 +174,7 @@ public class autocompleteFragment extends Fragment
     private SavedState savedStateGoogleMap = null, savedStateMapFragment = null;
 
     private void setLayoutToFragment(int layout){
-        Fragment f = null;
+        Fragment f;
 
         if(layout == 1){
             f = googleMapFragment;
@@ -345,9 +347,8 @@ public class autocompleteFragment extends Fragment
             }
         });
 
-        GPSTracker gps =  MyGPSTracker.getInstance(getActivity());
-        String orig = gps.getLatitude()+","+gps.getLongitude();
-        String origin = orig;
+        GPSTracker gps =  GPSTracker.Singleton.getInstance(getActivity());
+        String origin = gps.getLatitude()+","+gps.getLongitude();
 
         String asynchString = "https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+asyncDestString+"&key=AIzaSyAKaCJA-cFhcyLqi0oeF7Oag6BsOnNPD-s";
         String asynchStringWOServer = "https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+asyncDestString;
@@ -390,7 +391,7 @@ public class autocompleteFragment extends Fragment
         directionsBundle.putString("destination", latLng);
         //bundle.putString("destination", "place_id:" + place.getId());
         directionsBundle.putString("destinationText", place.getAddress().toString());
-        mapFragment = new mapFragment();
+        mapFragment = new MapFragment();
         mapFragment.setArguments(directionsBundle);
         startAsynch(latLng);
         //launchTurnbyTurnNavigation(place);
