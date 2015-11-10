@@ -39,13 +39,7 @@ public class AsynchTaskURL extends AsyncTask<String, String, String> {
         this.onResultListener = listener;
     }
 
-    public AsynchTaskURL(OnResultListener listener, String origin, String destination){
-        this.onResultListener = listener;
-        this.origin = origin;
-        this.destination = destination;
-    }
-
-        protected void onPreExecute() {
+    protected void onPreExecute() {
 //            progressDialog.setMessage("Downloading your data...");
 //            progressDialog.show();
 //            progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -53,7 +47,7 @@ public class AsynchTaskURL extends AsyncTask<String, String, String> {
 //                    AsynchTaskURL.this.cancel(true);
 //                }
 //            });
-        }
+    }
 
     @Override
     protected String doInBackground(String... params) {
@@ -130,17 +124,6 @@ public class AsynchTaskURL extends AsyncTask<String, String, String> {
             }
             onResultListener.OnResult(arrayList);
 
-
-//            JSONArray jArray = new JSONArray(result);
-//            for(int i=0; i < jArray.length(); i++) {
-//
-//                JSONObject jObject = jArray.getJSONObject(i);
-//
-//                String name = jObject.getString("name");
-//                String tab1_text = jObject.getString("tab1_text");
-//                int active = jObject.getInt("active");
-//
-//            } // End Loop
             //this.progressDialog.dismiss();
         } catch (JSONException e) {
             e.printStackTrace();
@@ -151,9 +134,9 @@ public class AsynchTaskURL extends AsyncTask<String, String, String> {
     private OnResultListener onResultListener;
 
     public interface OnResultListener{
-        public void OnResult(ArrayList<Direction> dirs);
+        void OnResult(ArrayList<Direction> dirs);
     }
 
-} //class MyAsyncTask extends AsyncTask<String, String, Void>
+}
 
 

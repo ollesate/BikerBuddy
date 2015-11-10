@@ -243,6 +243,10 @@ public class AutocompleteFragment extends Fragment
      * @see com.google.android.gms.location.places.GeoDataApi#getPlaceById(com.google.android.gms.common.api.GoogleApiClient,
      * String...)
      */
+    private void setOnAutoCompleteResult(){
+
+    }
+
     private AdapterView.OnItemClickListener mAutocompleteClickListener
             = new AdapterView.OnItemClickListener() {
         @Override

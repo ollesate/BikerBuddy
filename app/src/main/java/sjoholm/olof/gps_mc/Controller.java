@@ -1,12 +1,14 @@
-package sjoholm.olof.gps_mc.Fragments;
+package sjoholm.olof.gps_mc;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.location.Location;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -15,6 +17,9 @@ import java.util.Set;
 import sjoholm.olof.gps_mc.AsynchTaskURL;
 import sjoholm.olof.gps_mc.BluetoothHandler;
 import sjoholm.olof.gps_mc.Direction;
+import sjoholm.olof.gps_mc.Fragments.AutocompleteFragment;
+import sjoholm.olof.gps_mc.Fragments.MapFragment;
+import sjoholm.olof.gps_mc.Fragments.googleMapFragment;
 import sjoholm.olof.gps_mc.GPSTracker;
 import sjoholm.olof.gps_mc.MainActivity;
 import sjoholm.olof.gps_mc.R;
@@ -30,9 +35,33 @@ public class Controller {
     private BluetoothDevice connectedDevice = null;
     private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
+    private GPSTracker gps;
+
+    private AutocompleteFragment autocompleteFragment;
+    private MapFragment mapFragment;
+    private googleMapFragment googleMapFragment;
+
     public Controller(MainActivity context){
         this.context = context;
         initializeBluetooth();
+        initializeGPS(context);
+        intializeFragments();
+    }
+
+    private void intializeFragments() {
+        googleMapFragment = new googleMapFragment();
+        autocompleteFragment = new AutocompleteFragment();
+        mapFragment = new MapFragment();
+    }
+
+    private void initializeGPS(Context context) {
+        gps = GPSTracker.Singleton.getInstance(context);
+        gps.setListener(new LocationSource.OnLocationChangedListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                GPS_OnUpdate(location);
+            }
+        });
     }
 
     private void initializeBluetooth(){
@@ -82,14 +111,12 @@ public class Controller {
         bl_handler.send(message);
     }
 
-    private void GPS_OnUpdate(){
+    private void GPS_OnUpdate(Location location){
 
     }
 
-
-
     public void StartMainFragment(){
-
+        replaceFragment(new AutocompleteFragment());
     }
 
     public void replaceFragment(Fragment fragment){
@@ -115,7 +142,7 @@ public class Controller {
 
         String base = "https://maps.googleapis.com/maps/api/directions/json?";
         String origin = originCoord.latitude + "," + originCoord.longitude;
-        String destination = originCoord.latitude + "," + originCoord.longitude;
+        String destination = destinationCoord.latitude + "," + destinationCoord.longitude;
         String query = base + "origin=" + origin + "&destination=" + destination;
 
         asynchTaskURL.execute(query);
@@ -123,8 +150,6 @@ public class Controller {
     }
 
     private void onGoogleDirectionResult(ArrayList<Direction> dirs){
-
-
 
     }
 
