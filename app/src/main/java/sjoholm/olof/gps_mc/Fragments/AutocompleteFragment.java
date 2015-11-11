@@ -55,6 +55,7 @@ public class AutocompleteFragment extends Fragment
 
 
     private static String TAG = "autoComplFrag";
+
     protected GoogleApiClient mGoogleApiClient;
 
     private PlaceAutocompleteAdapter mAdapter;
@@ -65,143 +66,28 @@ public class AutocompleteFragment extends Fragment
 
     private TextView mPlaceDetailsAttribution;
 
-    private Button bSwitch;
-
-    private static final LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(
-            new LatLng(-34.041458, 150.790100), new LatLng(-33.682247, 151.383362));
-
     private static final LatLngBounds BOUNDS_GREATER_SWEDEN = new LatLngBounds(
             new LatLng(55.213356, 13.381348), new LatLng(68.389067, 20.939941));
-
-
-    private static final float ZoomInLevel = 7.0f;
-
-    private GPSTracker gps;
-
-    public AutocompleteFragment() {
-        gps = GPSTracker.Singleton.getInstance(getActivity());
-        gps.setListener(new LocationSource.OnLocationChangedListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                if(asyncDestString != ""){
-                    startAsynch(asyncDestString);
-                    Toast.makeText(getActivity(), "Updated position", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        initializeBluetooth();
-    }
-
-    private BluetoothDevice mBluetoothDevice;
-    private BluetoothHandler bluetoothHandler;
-
-    private void initializeBluetooth(){
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-
-        if (pairedDevices.size() > 0) {
-            // Loop through paired devices
-            for (BluetoothDevice device : pairedDevices) {
-
-                mBluetoothDevice = device;
-
-                bluetoothHandler = new BluetoothHandler(mBluetoothDevice);
-
-                Log.d("bluetooth", device.getName());
-
-                break;
-
-            }
-        }
-
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        if(googleMapFragment == null){
-            googleMapFragment = new googleMapFragment();
-            googleMapFragment.setMapClickListener(new GoogleMap.OnMapClickListener() {
-                @Override
-                public void onMapClick(LatLng latLng) {
-                    startDestination(latLng);
-                }
-            });
-        }
-        if(mapFragment == null){
-            mapFragment = new MapFragment();
-        }
-        setLayoutToFragment(witchFragment);
+        //setLayoutToFragment(witchFragment);
         return inflater.inflate(R.layout.fragment_autocomplete, container, false);
     }
 
-    private googleMapFragment googleMapFragment;
     private MapFragment mapFragment;
 
     private int witchFragment = 1;
 
     private int testLength = 0;
 
-    private void toggleFragments(){
-
-        testLength++;
-        if(testLength == 4)
-            testLength = 0;
-        bluetoothHandler.send("L:"+testLength);
-        Log.d("bluetooth", "L:"+testLength);
-
-        if(witchFragment == 0){
-            setLayoutToFragment(1);
-            savedStateMapFragment = getActivity().getSupportFragmentManager().saveFragmentInstanceState(mapFragment);
-            witchFragment = 1;
-            //bluetoothHandler.send("0");
-        }
-        else{
-            setLayoutToFragment(0);
-            savedStateGoogleMap = getActivity().getSupportFragmentManager().saveFragmentInstanceState(googleMapFragment);
-            witchFragment = 0;
-            //bluetoothHandler.send("1");
-        }
-    }
-
-    private void setDestinationMarker(LatLng latLng){
-        googleMapFragment.setMarker(latLng, "Destination");
-    }
-
     private SavedState savedStateGoogleMap = null, savedStateMapFragment = null;
-
-    private void setLayoutToFragment(int layout){
-        Fragment f;
-
-        if(layout == 1){
-            f = googleMapFragment;
-            if(savedStateGoogleMap != null){
-                googleMapFragment.setInitialSavedState(savedStateGoogleMap);
-            }
-        }else{
-            f = mapFragment;
-            if(savedStateMapFragment!= null){
-                mapFragment.setInitialSavedState(savedStateMapFragment);
-            }
-        }
-
-        getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.midcontainer, f).commit();
-
-    }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
 
-        bSwitch = (Button) view.findViewById(R.id.bSwitch);
-        bSwitch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggleFragments();
-            }
-        });
 
 
         // Construct a GoogleApiClient for the {@link Places#GEO_DATA_API} using AutoManage
@@ -243,9 +129,6 @@ public class AutocompleteFragment extends Fragment
      * @see com.google.android.gms.location.places.GeoDataApi#getPlaceById(com.google.android.gms.common.api.GoogleApiClient,
      * String...)
      */
-    private void setOnAutoCompleteResult(){
-
-    }
 
     private AdapterView.OnItemClickListener mAutocompleteClickListener
             = new AdapterView.OnItemClickListener() {
@@ -285,10 +168,19 @@ public class AutocompleteFragment extends Fragment
         }
     }
 
-    /**
-     * Callback for results from a Places Geo Data API query that shows the first place result in
-     * the details view on screen.
-     */
+    public interface PlaceResultCallback {
+        void onResult(LatLng place);
+    }
+
+    public void setPlaceResultCallback(PlaceResultCallback placeResultCallback) {
+        this.placeResultCallback = placeResultCallback;
+    }
+
+    private PlaceResultCallback placeResultCallback;
+
+
+
+
     private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback
             = new ResultCallback<PlaceBuffer>() {
         @Override
@@ -301,124 +193,127 @@ public class AutocompleteFragment extends Fragment
             }
             // Get the Place object from the buffer.
             final Place place = places.get(0);
-
-            // Format details of the place for display and show it in a TextView.
-            mPlaceDetailsText.setText(formatPlaceDetails(getResources(), place.getName(),
-                    place.getId(), place.getAddress(), place.getPhoneNumber(),
-                    place.getWebsiteUri()));
-
-            // Display the third party attributions if set.
-            final CharSequence thirdPartyAttribution = places.getAttributions();
-            if (thirdPartyAttribution == null) {
-                mPlaceDetailsAttribution.setVisibility(View.GONE);
-            } else {
-                mPlaceDetailsAttribution.setVisibility(View.VISIBLE);
-                mPlaceDetailsAttribution.setText(Html.fromHtml(thirdPartyAttribution.toString()));
-            }
+            LatLng latLng = place.getLatLng();
+//            // Format details of the place for display and show it in a TextView.
+//            mPlaceDetailsText.setText(formatPlaceDetails(getResources(), place.getName(),
+//                    place.getId(), place.getAddress(), place.getPhoneNumber(),
+//                    place.getWebsiteUri()));
+//
+//            // Display the third party attributions if set.
+//            final CharSequence thirdPartyAttribution = places.getAttributions();
+//            if (thirdPartyAttribution == null) {
+//                mPlaceDetailsAttribution.setVisibility(View.GONE);
+//            } else {
+//                mPlaceDetailsAttribution.setVisibility(View.VISIBLE);
+//                mPlaceDetailsAttribution.setText(Html.fromHtml(thirdPartyAttribution.toString()));
+//            }
 
             Log.i(TAG, "Place details received: " + place.getName());
-            startNextFragment(place);
+            //startNextFragment(place);
             places.release();
+
+            if(placeResultCallback != null)
+                placeResultCallback.onResult(latLng);
         }
     };
 
-    private void startDestination(LatLng latLng){
-        Log.d("Dir", "starting destination");
-        setDestinationMarker(latLng);
-        String latLngStr = latLng.latitude + "," + latLng.longitude;
-        directionsBundle = new Bundle();
-        directionsBundle.putString("destination", latLngStr);
-        //bundle.putString("destination", "place_id:" + place.getId());
-        mapFragment.setArguments(directionsBundle);
+//    private void startDestination(LatLng latLng){
+//        Log.d("Dir", "starting destination");
+//        setDestinationMarker(latLng);
+//        String latLngStr = latLng.latitude + "," + latLng.longitude;
+//        directionsBundle = new Bundle();
+//        directionsBundle.putString("destination", latLngStr);
+//        //bundle.putString("destination", "place_id:" + place.getId());
+//        mapFragment.setArguments(directionsBundle);
+//
+//        googleMapFragment.setLocationMap(latLng);
+//        googleMapFragment.zoomMap(ZoomInLevel);
+//
+//        startAsynch(latLngStr);
+//    }
 
-        googleMapFragment.setLocationMap(latLng);
-        googleMapFragment.zoomMap(ZoomInLevel);
-
-        startAsynch(latLngStr);
-    }
-
-    private String asyncDestString = "";
-    private ArrayList<Direction> currentDirections;
-
-    public void startAsynch(String latLngStringDirection ) {
-        asyncDestString = latLngStringDirection;
-        AsynchTaskURL asynchTaskURL = new AsynchTaskURL(new AsynchTaskURL.OnResultListener() {
-            @Override
-            public void OnResult(ArrayList<Direction> dirs) {
-                mapFragment.setDirection(dirs);
-                googleMapFragment.drawNavigationPath(dirs);
-                currentDirections = dirs;
-            }
-        });
-
-        GPSTracker gps =  GPSTracker.Singleton.getInstance(getActivity());
-        String origin = gps.getLatitude()+","+gps.getLongitude();
-
-        String asynchString = "https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+asyncDestString+"&key=AIzaSyAKaCJA-cFhcyLqi0oeF7Oag6BsOnNPD-s";
-        String asynchStringWOServer = "https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+asyncDestString;
-        Log.d("Direction", asynchStringWOServer);
-        asynchTaskURL.execute(asynchStringWOServer);
-    }
-
-
-    private class SimulateTrip implements Runnable{
-
-        private ArrayList<Direction> dirs;
-        public SimulateTrip(ArrayList<Direction> dirs){
-            this.dirs = dirs;
-        }
-
-        @Override
-        public void run() {
-            for(Direction dir: dirs){
-                bluetoothHandler.send(dir.BlueToothCode + "");
-                Log.d("Direction", dir.getManeuver());
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        }
-    }
-    private Bundle directionsBundle;
-
-    private void startNextFragment(Place place) {
-
-        googleMapFragment.setLocationMap(place.getLatLng());
-        googleMapFragment.zoomMap(ZoomInLevel);
-
-        String latLng = place.getLatLng().latitude+","+place.getLatLng().longitude;
-        setDestinationMarker(place.getLatLng());
-        directionsBundle = new Bundle();
-        directionsBundle.putString("destination", latLng);
-        //bundle.putString("destination", "place_id:" + place.getId());
-        directionsBundle.putString("destinationText", place.getAddress().toString());
-        mapFragment = new MapFragment();
-        mapFragment.setArguments(directionsBundle);
-        startAsynch(latLng);
-        //launchTurnbyTurnNavigation(place);
-    }
-
-    private void drawNavigationOnMap(ArrayList<Direction> list){
-
-
-
-
-    }
-
-    private void launchTurnbyTurnNavigation(Place destination) {
-//        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + Uri.encode(destination.getAddress().toString()));
-//        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-//        mapIntent.setPackage("com.google.android.apps.maps");
-//        startActivity(mapIntent);
-
-        String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?saddr=%f,%f(%s)&daddr=%f,%f (%s)", gps.getLatitude(), gps.getLongitude(), "Home Sweet Home", destination.getLatLng().latitude, destination.getLatLng().longitude, "Where the party is at");
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-        intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
-        startActivity(intent);
-    }
+//    private String asyncDestString = "";
+//    private ArrayList<Direction> currentDirections;
+//
+//    public void startAsynch(String latLngStringDirection ) {
+//        asyncDestString = latLngStringDirection;
+//        AsynchTaskURL asynchTaskURL = new AsynchTaskURL(new AsynchTaskURL.OnResultListener() {
+//            @Override
+//            public void OnResult(ArrayList<Direction> dirs) {
+//                mapFragment.setDirection(dirs);
+//                googleMapFragment.drawNavigationPath(dirs);
+//                currentDirections = dirs;
+//            }
+//        });
+//
+//        GPSTracker gps =  GPSTracker.Singleton.getInstance(getActivity());
+//        String origin = gps.getLatitude()+","+gps.getLongitude();
+//
+//        String asynchString = "https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+asyncDestString+"&key=AIzaSyAKaCJA-cFhcyLqi0oeF7Oag6BsOnNPD-s";
+//        String asynchStringWOServer = "https://maps.googleapis.com/maps/api/directions/json?origin="+origin+"&destination="+asyncDestString;
+//        Log.d("Direction", asynchStringWOServer);
+//        asynchTaskURL.execute(asynchStringWOServer);
+//    }
+//
+//
+//    private class SimulateTrip implements Runnable{
+//
+//        private ArrayList<Direction> dirs;
+//        public SimulateTrip(ArrayList<Direction> dirs){
+//            this.dirs = dirs;
+//        }
+//
+//        @Override
+//        public void run() {
+//            for(Direction dir: dirs){
+//                bluetoothHandler.send(dir.BlueToothCode + "");
+//                Log.d("Direction", dir.getManeuver());
+//                try {
+//                    Thread.sleep(5000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//        }
+//    }
+//    private Bundle directionsBundle;
+//
+//    private void startNextFragment(Place place) {
+//
+//        googleMapFragment.setLocationMap(place.getLatLng());
+//        googleMapFragment.zoomMap(ZoomInLevel);
+//
+//        String latLng = place.getLatLng().latitude+","+place.getLatLng().longitude;
+//        setDestinationMarker(place.getLatLng());
+//        directionsBundle = new Bundle();
+//        directionsBundle.putString("destination", latLng);
+//        //bundle.putString("destination", "place_id:" + place.getId());
+//        directionsBundle.putString("destinationText", place.getAddress().toString());
+//        mapFragment = new MapFragment();
+//        mapFragment.setArguments(directionsBundle);
+//        startAsynch(latLng);
+//        //launchTurnbyTurnNavigation(place);
+//    }
+//
+//    private void drawNavigationOnMap(ArrayList<Direction> list){
+//
+//
+//
+//
+//    }
+//
+//    private void launchTurnbyTurnNavigation(Place destination) {
+////        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + Uri.encode(destination.getAddress().toString()));
+////        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+////        mapIntent.setPackage("com.google.android.apps.maps");
+////        startActivity(mapIntent);
+//
+//        String uri = String.format(Locale.ENGLISH, "http://maps.google.com/maps?saddr=%f,%f(%s)&daddr=%f,%f (%s)", gps.getLatitude(), gps.getLongitude(), "Home Sweet Home", destination.getLatLng().latitude, destination.getLatLng().longitude, "Where the party is at");
+//        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+//        intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
+//        startActivity(intent);
+//    }
 
     private static Spanned formatPlaceDetails(Resources res, CharSequence name, String id,
                                               CharSequence address, CharSequence phoneNumber, Uri websiteUri) {

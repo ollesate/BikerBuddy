@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
+import com.android.internal.util.Predicate;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,10 +20,24 @@ public class BluetoothHandler {
         Connect(device);
     }
 
+    public static final int FAILED_CONNECTING = 0;
+    public static final int CONNECTING = 1;
+    public static final int CONNECTED = 2;
+    public static final int DISCONNECTED = 3;
+
+    interface OnBluetoothStateListener {
+        void onStateChanged(int state);
+    }
+
+    OnBluetoothStateListener listener;
+
+    public void setBluetoothStateListener(OnBluetoothStateListener listener){
+        this.listener = listener;
+    }
+
     public BluetoothHandler(){
 
     }
-
 
     public void send(String message){
         if(connection != null) {
@@ -73,7 +89,7 @@ public class BluetoothHandler {
 
         public void run() {
             // Cancel discovery because it will slow down the connection
-
+            sendStateChanged(CONNECTING);
             try {
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
@@ -82,10 +98,13 @@ public class BluetoothHandler {
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and get out
                 try {
+                    sendStateChanged(FAILED_CONNECTING);
                     mmSocket.close();
                 } catch (IOException closeException) { }
                 return;
             }
+
+            sendStateChanged(CONNECTED);
             Log.d("Bluetooth", "Seems like we are connected!");
             // Do work to manage the connection (in a separate thread)
             manageConnectedSocket(mmSocket);
@@ -98,6 +117,12 @@ public class BluetoothHandler {
             } catch (IOException e) { }
         }
 
+    }
+
+    private void sendStateChanged(int state){
+        if(listener == null)
+            return;
+        listener.onStateChanged(state);
     }
 
     private ConnectedThread connection;
@@ -136,10 +161,14 @@ public class BluetoothHandler {
 //                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
 //                            .sendToTarget();
                 } catch (IOException e) {
+                    e.printStackTrace();
+                    sendStateChanged(DISCONNECTED);
                     break;
                 }
             }
         }
+
+
 
         /* Call this from the main activity to send data to the remote device */
         public void write(byte[] bytes) {

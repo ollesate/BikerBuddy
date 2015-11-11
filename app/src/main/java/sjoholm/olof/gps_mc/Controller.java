@@ -1,28 +1,28 @@
 package sjoholm.olof.gps_mc;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.Set;
 
-import sjoholm.olof.gps_mc.AsynchTaskURL;
-import sjoholm.olof.gps_mc.BluetoothHandler;
-import sjoholm.olof.gps_mc.Direction;
 import sjoholm.olof.gps_mc.Fragments.AutocompleteFragment;
+import sjoholm.olof.gps_mc.Fragments.MainFragment;
 import sjoholm.olof.gps_mc.Fragments.MapFragment;
+import sjoholm.olof.gps_mc.Fragments.SimpleBluetoothConnectFragment;
 import sjoholm.olof.gps_mc.Fragments.googleMapFragment;
-import sjoholm.olof.gps_mc.GPSTracker;
-import sjoholm.olof.gps_mc.MainActivity;
-import sjoholm.olof.gps_mc.R;
 
 /**
  * Created by w1 on 2015-11-10.
@@ -40,18 +40,56 @@ public class Controller {
     private AutocompleteFragment autocompleteFragment;
     private MapFragment mapFragment;
     private googleMapFragment googleMapFragment;
+    private SimpleBluetoothConnectFragment simpleBluetoothConnectFragment;
+    private MainFragment mainFragment;
 
     public Controller(MainActivity context){
         this.context = context;
         initializeBluetooth();
         initializeGPS(context);
-        intializeFragments();
+        initializeFragments();
+
+
+
+        Bluetooth_TryFind_HC06();
     }
 
-    private void intializeFragments() {
+    private void initializeFragments() {
+
+        mainFragment = new MainFragment();
+
         googleMapFragment = new googleMapFragment();
+
+        googleMapFragment.setMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng mapLatLng) {
+                sendGoogleDirectionRequest(gps.getLatLng(), mapLatLng);
+            }
+        });
+
         autocompleteFragment = new AutocompleteFragment();
+
+        autocompleteFragment.setPlaceResultCallback(new AutocompleteFragment.PlaceResultCallback() {
+            @Override
+            public void onResult(LatLng place) {
+                LatLng Lund = new LatLng(55.695269, 13.209000);
+                sendGoogleDirectionRequest(gps.getLatLng(), place);
+            }
+        });
+
         mapFragment = new MapFragment();
+
+        simpleBluetoothConnectFragment = new SimpleBluetoothConnectFragment();
+        simpleBluetoothConnectFragment.setController(this);
+
+        simpleBluetoothConnectFragment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("Controller", "Button CLick");
+                StartMainFragment();
+            }
+        });
+
     }
 
     private void initializeGPS(Context context) {
@@ -66,12 +104,81 @@ public class Controller {
 
     private void initializeBluetooth(){
         bl_handler = new BluetoothHandler();
+
+        connectionToast = Toast.makeText(context, "", Toast.LENGTH_SHORT);
+
+        bl_handler.setBluetoothStateListener(new BluetoothHandler.OnBluetoothStateListener() {
+            @Override
+            public void onStateChanged(int state) {
+
+                switch (state) {
+                    case BluetoothHandler.CONNECTING:
+                        runToastOnGui(connectionToast, "Connecting...");
+                        simpleBluetoothConnectFragment.lockButton(true);
+                        break;
+                    case BluetoothHandler.CONNECTED:
+                        runToastOnGui(connectionToast, "Connection!");
+                        simpleBluetoothConnectFragment.lockButton(false);
+                        StartMainFragment();
+                        break;
+                    case BluetoothHandler.FAILED_CONNECTING:
+                        runToastOnGui(connectionToast, "Connection failed");
+                        simpleBluetoothConnectFragment.lockButton(false);
+                        break;
+                    case BluetoothHandler.DISCONNECTED:
+                        runToastOnGui(connectionToast, "Connection disconnected");
+                        simpleBluetoothConnectFragment.lockButton(false);
+                        break;
+                }
+            }
+        });
+    }
+
+    private void runToastOnGui(final Toast toast, final String text){
+        context.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                toast.setText(text);
+                toast.show();
+            }
+        });
+    }
+
+    private void runToastOnGui(final Toast toast){
+        context.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                toast.show();
+            }
+        });
     }
 
     private final String BLUETOOTH_MODULE_NAME = "HC-06";
 
-    public void Bluetooth_TryConnect_HC06(){
-        bl_handler = new BluetoothHandler();
+    private boolean checkBluetoothReady(){
+        if (bluetoothAdapter == null){
+            Toast.makeText(context, "No Bluetooth support", Toast.LENGTH_SHORT).show();
+        }else{
+            if (bluetoothAdapter.isEnabled()){
+                if(bluetoothAdapter.isDiscovering()){
+                    Toast.makeText(context, "Bluetooth is currently in device discovery process", Toast.LENGTH_SHORT).show();
+                }else{
+                    return true;
+                }
+            }else{
+
+            }
+        }
+        return false;
+    }
+
+    public void Bluetooth_Find_HC06(){
+
+        if(!bluetoothAdapter.isEnabled() && bluetoothAdapter.isDiscovering()) {
+            Toast.makeText(context, "Can't connect to Bluetooth", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
         connectedDevice = null;
 
@@ -85,22 +192,31 @@ public class Controller {
         }
 
         if(connectedDevice == null){
-            bluetooth_OpenPairWindow();
+            Toast.makeText(context, "Not able to find HC-06", Toast.LENGTH_SHORT).show();
         }else{
-            bluetooth_Connect(connectedDevice);
+            Toast.makeText(context, "Ready to connect HC-06", Toast.LENGTH_SHORT).show();
         }
+
     }
 
-    private void bluetooth_OpenPairWindow(){
-        //TODO
+    private void Bluetooth_TryFind_HC06(){
+
+        if(checkBluetoothReady()){
+            Bluetooth_Find_HC06();
+
+            StartSetupFragment();
+
+        }else{
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            context.startActivityForResult(enableBtIntent, MainActivity.REQUEST_ENABLE_BT);
+        }
+
     }
 
-    private void bluetooth_OpenTurnOnWindow(){
-        //TODO
-    }
+    private Toast connectionToast;
 
-    private void bluetooth_Connect(BluetoothDevice device){
-        bl_handler.Connect(device);
+    public void HC06_Connect(){
+        bl_handler.Connect(connectedDevice);
     }
 
     public void Bluetooth_Disconnect(){
@@ -113,22 +229,34 @@ public class Controller {
 
     private void GPS_OnUpdate(Location location){
 
+        runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m.", Toast.LENGTH_SHORT));
+
+    }
+
+    public void StartSetupFragment(){
+        replaceFragment(simpleBluetoothConnectFragment);
     }
 
     public void StartMainFragment(){
-        replaceFragment(new AutocompleteFragment());
+        replaceFragment(mainFragment);
+        replaceFragment(autocompleteFragment, R.id.header_container);
+        replaceFragment(googleMapFragment, R.id.content_container);
     }
 
     public void replaceFragment(Fragment fragment){
         context.getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
     }
 
-    public void MapClick(){
+    public void replaceFragment(Fragment fragment, int id){
+        context.getSupportFragmentManager().beginTransaction().replace(id, fragment).commit();
+    }
+
+    public void MapClick(LatLng latLng){
 
     }
 
     public void AutocompleteClick(){
-
+        //TODO
     }
 
     private void sendGoogleDirectionRequest(LatLng originCoord, LatLng destinationCoord){
@@ -150,7 +278,8 @@ public class Controller {
     }
 
     private void onGoogleDirectionResult(ArrayList<Direction> dirs){
-
+        for(Direction d : dirs)
+            Log.d("Controller", d.toString());
     }
 
 }

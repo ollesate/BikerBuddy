@@ -21,6 +21,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -48,7 +49,14 @@ public class googleMapFragment extends Fragment {
     private GoogleMap map;
 
     private static final float DefaultZoomLevel = 4.0f;
+
     private static final LatLng DefaultLocation = new LatLng(55.213356, 13.381348);
+
+    private static final LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(
+            new LatLng(-34.041458, 150.790100), new LatLng(-33.682247, 151.383362));
+
+    private static final LatLngBounds BOUNDS_GREATER_SWEDEN = new LatLngBounds(
+            new LatLng(55.213356, 13.381348), new LatLng(68.389067, 20.939941));
 
     private GoogleMap.OnMapClickListener mapClickListener;
 

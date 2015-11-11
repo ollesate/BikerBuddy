@@ -28,22 +28,4 @@
             android:id="@+id/place_attribution" />
     </LinearLayout>
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Switch"
-        android:id="@+id/bSwitch"
-        android:layout_gravity="bottom"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/linearLayout"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@+id/bSwitch"
-        android:id="@+id/midcontainer"></RelativeLayout>
-
 </RelativeLayout>

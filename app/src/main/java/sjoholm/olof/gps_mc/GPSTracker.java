@@ -14,6 +14,7 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import com.google.android.gms.maps.LocationSource;
+import com.google.android.gms.maps.model.LatLng;
 
 /**
  * Created by olof on 2015-09-19.
@@ -87,8 +88,11 @@ public class GPSTracker extends Service implements LocationListener {
                             MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
                     Log.d("GPSTracker", "Network");
                     if (locationManager != null) {
+
                         location = locationManager
                                 .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        listener.onLocationChanged(location);
+
                         if (location != null) {
                             latitude = location.getLatitude();
                             longitude = location.getLongitude();
@@ -106,6 +110,8 @@ public class GPSTracker extends Service implements LocationListener {
                         if (locationManager != null) {
                             location = locationManager
                                     .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                            listener.onLocationChanged(location);
+
                             if (location != null) {
                                 latitude = location.getLatitude();
                                 longitude = location.getLongitude();
@@ -175,6 +181,10 @@ public class GPSTracker extends Service implements LocationListener {
 
         // return longitude
         return longitude;
+    }
+
+    public LatLng getLatLng(){
+        return new LatLng(getLatitude(), getLongitude());
     }
 
     /**
