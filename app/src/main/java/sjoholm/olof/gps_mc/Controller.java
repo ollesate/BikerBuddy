@@ -46,8 +46,8 @@ public class Controller {
     public Controller(MainActivity context){
         this.context = context;
         initializeBluetooth();
-        initializeGPS(context);
         initializeFragments();
+        initializeGPS(context);
 
 
 
@@ -72,7 +72,6 @@ public class Controller {
         autocompleteFragment.setPlaceResultCallback(new AutocompleteFragment.PlaceResultCallback() {
             @Override
             public void onResult(LatLng place) {
-                LatLng Lund = new LatLng(55.695269, 13.209000);
                 sendGoogleDirectionRequest(gps.getLatLng(), place);
             }
         });
@@ -100,6 +99,8 @@ public class Controller {
                 GPS_OnUpdate(location);
             }
         });
+        gps.getLastKnownLocation();
+        gps.setUpdateRate(10);
     }
 
     private void initializeBluetooth(){
@@ -229,7 +230,14 @@ public class Controller {
 
     private void GPS_OnUpdate(Location location){
 
-        runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m.", Toast.LENGTH_SHORT));
+        runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m.", Toast.LENGTH_LONG));
+
+
+        //Korrigera bara kartan när en person inte har lagt ut någon rutt
+        if(!googleMapFragment.hasPath()){
+            googleMapFragment.zoomMap(15.0f);
+            googleMapFragment.setLocationMap(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
 
     }
 

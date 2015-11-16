@@ -20,6 +20,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -45,10 +46,17 @@ public class googleMapFragment extends Fragment {
         // Required empty public constructor
     }
 
+    private String BUNDLE_ZOOM = "ZOOM";
+    private String BUNDLE_LATLNG = "LATLNG";
+
     private MapView mapView;
     private GoogleMap map;
 
+    private boolean hasPath = false;
+
     private static final float DefaultZoomLevel = 4.0f;
+
+    private static final float ZOOM_LEVEL_PERSONAL = 10.0f;
 
     private static final LatLng DefaultLocation = new LatLng(55.213356, 13.381348);
 
@@ -74,8 +82,27 @@ public class googleMapFragment extends Fragment {
         map = mapView.getMap();
         map.getUiSettings().setMyLocationButtonEnabled(false);
         map.setMyLocationEnabled(true);
+        map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+            @Override
+            public void onCameraChange(CameraPosition cameraPosition) {
+                Log.d("Camera", "Zoom " + cameraPosition.zoom);
+            }
+        });
 
         MapsInitializer.initialize(this.getActivity());
+
+        Bundle bundle = getArguments();
+
+        if(bundle != null){
+
+            if(bundle.containsKey(BUNDLE_ZOOM))
+                zoomMap(    bundle.getFloat(BUNDLE_ZOOM)    );
+
+            if(bundle.containsKey(BUNDLE_LATLNG))
+                setLocationMap((LatLng) bundle.get(BUNDLE_LATLNG));
+
+        }
+
 
         return v;
     }
@@ -100,11 +127,21 @@ public class googleMapFragment extends Fragment {
         mapView.onLowMemory();
     }
 
+    public void clearMarker(){
+        hasPath = false;
+        map.clear();
+    }
+
+    public boolean hasPath(){
+        return hasPath;
+    }
+
     public void setMarker(LatLng latLng, String title) {
         map.clear();
         map.addMarker(new MarkerOptions()
                 .position(latLng)
                 .title(title));
+        hasPath = true;
     }
 
     public void setMapClickListener(GoogleMap.OnMapClickListener mapClickListener) {
@@ -114,11 +151,27 @@ public class googleMapFragment extends Fragment {
     }
 
     public void zoomMap(float value){
+
+        if(map == null){
+            Bundle bundle = (this.getArguments() == null) ? new Bundle() : this.getArguments(); //Append all arguments or create new
+            bundle.putFloat(BUNDLE_ZOOM, value);
+            this.setArguments(bundle);
+            return;
+        }
+
         CameraUpdate upd = CameraUpdateFactory.zoomTo(value);
         map.animateCamera(upd);
     }
 
     public void setLocationMap(LatLng latLng){
+
+        if(map == null){
+            Bundle bundle = (this.getArguments() == null) ? new Bundle() : this.getArguments(); //Append all arguments or create new
+            bundle.putParcelable(BUNDLE_LATLNG, latLng);
+            this.setArguments(bundle);
+            return;
+        }
+
         CameraUpdate upd = CameraUpdateFactory.newLatLng(latLng);
         map.moveCamera(upd);
     }
