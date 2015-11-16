@@ -1,6 +1,7 @@
 package sjoholm.olof.gps_mc;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -16,6 +17,8 @@ import java.util.UUID;
 public class MainActivity extends ActionBarActivity {
 
     private static final UUID SERVER_UUID = UUID.fromString("01001101-0000-1000-8000-00805f9b34fb");
+
+
 
     public final static int REQUEST_ENABLE_BT = 1;
 

@@ -84,7 +84,6 @@ public class Controller {
         simpleBluetoothConnectFragment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("Controller", "Button CLick");
                 StartMainFragment();
             }
         });
@@ -232,11 +231,12 @@ public class Controller {
 
         runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m.", Toast.LENGTH_LONG));
 
+        FileLog.d("GPS", "Location update with accuracy " + location.getAccuracy() + " m.");
 
         //Korrigera bara kartan när en person inte har lagt ut någon rutt
         if(!googleMapFragment.hasPath()){
-            googleMapFragment.zoomMap(15.0f);
             googleMapFragment.setLocationMap(new LatLng(location.getLatitude(), location.getLongitude()));
+            googleMapFragment.zoomMap(15.0f);
         }
 
     }

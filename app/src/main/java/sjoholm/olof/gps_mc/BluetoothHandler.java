@@ -74,11 +74,9 @@ public class BluetoothHandler {
 
             // Get a BluetoothSocket to connect with the given BluetoothDevice
             try {
-                Log.d("Bluetooth", "Before setting up RFcommSocket");
+                Log.d("Bluetooth", "Setting up RFcommSocket");
                 // MY_UUID is the app's UUID string, also used by the server code
                 tmp = mmDevice.createRfcommSocketToServiceRecord(SERVER_UUID);
-
-                Log.d("Bluetooth", "After setting up RFcommSocket");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -105,7 +103,7 @@ public class BluetoothHandler {
             }
 
             sendStateChanged(CONNECTED);
-            Log.d("Bluetooth", "Seems like we are connected!");
+            Log.d("Bluetooth", "Connected!");
             // Do work to manage the connection (in a separate thread)
             manageConnectedSocket(mmSocket);
         }

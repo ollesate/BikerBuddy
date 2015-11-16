@@ -86,9 +86,9 @@ public class GPSTracker extends Service implements LocationListener {
                             LocationManager.NETWORK_PROVIDER,
                             MIN_TIME_BW_UPDATES,
                             MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                    Log.d("GPSTracker", "Network");
-                    if (locationManager != null) {
 
+                    if (locationManager != null) {
+                        Log.d("GPS", "Location from NETWORK in last known");
                         location = locationManager
                                 .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                         listener.onLocationChanged(location);
@@ -106,8 +106,8 @@ public class GPSTracker extends Service implements LocationListener {
                                 LocationManager.GPS_PROVIDER,
                                 MIN_TIME_BW_UPDATES,
                                 MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                        Log.d("GPSTracker", "GPS Enabled");
                         if (locationManager != null) {
+                            Log.d("GPS", "Location from GPS_PROVIDER in last known");
                             location = locationManager
                                     .getLastKnownLocation(LocationManager.GPS_PROVIDER);
                             listener.onLocationChanged(location);
@@ -152,6 +152,7 @@ public class GPSTracker extends Service implements LocationListener {
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
+        FileLog.d("GPS", "Status Changed with provider: " + provider + ", status: " + status);
     }
 
     @Override

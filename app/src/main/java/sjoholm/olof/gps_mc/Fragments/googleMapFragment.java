@@ -85,7 +85,7 @@ public class googleMapFragment extends Fragment {
         map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
-                Log.d("Camera", "Zoom " + cameraPosition.zoom);
+
             }
         });
 
