@@ -16,9 +16,11 @@ import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Set;
 
 import sjoholm.olof.gps_mc.Fragments.AutocompleteFragment;
+import sjoholm.olof.gps_mc.Fragments.FooterInfoFragment;
 import sjoholm.olof.gps_mc.Fragments.MainFragment;
 import sjoholm.olof.gps_mc.Fragments.MapFragment;
 import sjoholm.olof.gps_mc.Fragments.SimpleBluetoothConnectFragment;
@@ -42,6 +44,7 @@ public class Controller {
     private googleMapFragment googleMapFragment;
     private SimpleBluetoothConnectFragment simpleBluetoothConnectFragment;
     private MainFragment mainFragment;
+    private FooterInfoFragment footerInfoFragment;
 
     public Controller(MainActivity context){
         this.context = context;
@@ -55,6 +58,8 @@ public class Controller {
     }
 
     private void initializeFragments() {
+
+        footerInfoFragment = new FooterInfoFragment();
 
         mainFragment = new MainFragment();
 
@@ -225,6 +230,8 @@ public class Controller {
         bl_handler.send(message);
     }
 
+    private long prevTime = 0;
+
     private void GPS_OnUpdate(Location location){
 
         LatLng currentPoint = new LatLng(location.getLatitude(), location.getLongitude());
@@ -233,33 +240,57 @@ public class Controller {
             runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m. Speed is " + location.getSpeed() + ".", Toast.LENGTH_LONG));
         }
         else{
-            if(location.hasSpeed()){
-                float estimatedTimeToDest = getDistance(currentPoint, getNextPoint()) / location.getSpeed();
-                runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m. Speed is "
-                        + location.getSpeed() + " m/s. Estimated time to destination " + estimatedTimeToDest + "s.", Toast.LENGTH_LONG));
+            final float dist= getDistance(currentPoint, getNextPoint());
+
+            final float estimatedTimeToDest = dist / location.getSpeed();
+            runToastOnGui(Toast.makeText(context,
+                    "Location update with accuracy " + location.getAccuracy() + " m. " +
+                            "Speed is " + location.getSpeed() + " m/s. " +
+                            "Distance to target is  " + dist + " m. " +
+                            "Estimated time to destination " + estimatedTimeToDest + "s.", Toast.LENGTH_LONG));
+
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    footerInfoFragment.updateValues(dist + " m.", estimatedTimeToDest + " m/s.");
+                }
+            });
+
+            if(dist < 100){
+                gps.setUpdateRate(0);
             }else{
-                runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m. Speed is " + location.getSpeed() + " m/s.", Toast.LENGTH_LONG));
+                gps.setUpdateRate(10);
             }
+
         }
 
         FileLog.d("GPS", "Location update with accuracy " + location.getAccuracy() + " m. Speed is " + location.getSpeed() + ".");
 
-        //Korrigera bara kartan när en person inte har lagt ut någon rutt
-        if(!googleMapFragment.hasPath()){
-            googleMapFragment.setLocationMap(new LatLng(location.getLatitude(), location.getLongitude()));
-            googleMapFragment.zoomMap(15.0f);
+
+        if(directions != null) {
+            if (prevTime == 0) {
+                prevTime = location.getTime();
+            } else {
+                if (Calendar.getInstance().getTime().getTime() - prevTime > 15000) {
+                    //Update map
+                    sendGoogleDirectionRequest(
+                            new LatLng(location.getLatitude(), location.getLongitude()),
+                            directions.get(directions.size() - 1).getEndLatLng()
+                    );
+                    prevTime = location.getTime();
+                }
+            }
         }
 
     }
 
     private float getDistance(LatLng p1, LatLng p2){
-        return (float) Math.sqrt(Math.pow(p1.latitude-p2.latitude, 2) + Math.pow(p1.longitude-p2.longitude, 2));
+        return (float) (Math.sqrt(Math.pow(p1.latitude-p2.latitude, 2) + Math.pow(p1.longitude-p2.longitude, 2)) * 111.32 * 1000);
     }
 
     private LatLng getNextPoint(){
-        return (directions == null || directions.size() < 2) ? null : directions.get(1).getLatLng();
+        return (directions == null || directions.size() < 2) ? null : directions.get(1).getStartLatLng();
     }
-
 
     public void StartSetupFragment(){
         replaceFragment(simpleBluetoothConnectFragment);
@@ -269,6 +300,7 @@ public class Controller {
         replaceFragment(mainFragment);
         replaceFragment(autocompleteFragment, R.id.header_container);
         replaceFragment(googleMapFragment, R.id.content_container);
+        replaceFragment(footerInfoFragment, R.id.footer_container);
     }
 
     public void replaceFragment(Fragment fragment){

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import sjoholm.olof.gps_mc.Direction;
+import sjoholm.olof.gps_mc.GPSTracker;
 import sjoholm.olof.gps_mc.R;
 
 
@@ -106,19 +107,10 @@ public class googleMapFragment extends Fragment {
 
         MapsInitializer.initialize(this.getActivity());
 
-        Bundle bundle = getArguments();
+        GPSTracker gps = GPSTracker.Singleton.getInstance(getActivity());
+        setLocationMap(gps.getLatLng());
+        zoomMap(15.0f);
 
-        if(bundle != null){
-
-            if(bundle.containsKey(BUNDLE_LATLNG)) {
-                setLocationMap((LatLng) bundle.get(BUNDLE_LATLNG));
-            }
-
-            if(bundle.containsKey(BUNDLE_ZOOM)) {
-                zoomMap(bundle.getFloat(BUNDLE_ZOOM));
-            }
-
-        }
 
     }
 

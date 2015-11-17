@@ -20,15 +20,25 @@ public class Direction{
     private String htmlInstructions;
     private String polyLineEncoded;
 
-    public LatLng getLatLng() {
-        return latLng;
+    public LatLng getStartLatLng() {
+        return startLatLng;
     }
 
-    public void setLatLng(LatLng latLng) {
-        this.latLng = latLng;
+    public void setStartLatLng(LatLng latLng) {
+        this.startLatLng = latLng;
     }
 
-    private LatLng latLng;
+    private LatLng startLatLng;
+
+    public LatLng getEndLatLng() {
+        return endLatLng;
+    }
+
+    public void setEndLatLng(LatLng endLatLng) {
+        this.endLatLng = endLatLng;
+    }
+
+    private LatLng endLatLng;
 
     //private ContentValues val = new ContentValues().
 
@@ -85,8 +95,11 @@ public class Direction{
             //Hämta coords
             double lat = jsonObject.getJSONObject("start_location").getDouble("lat");
             double lng = jsonObject.getJSONObject("start_location").getDouble("lng");
-            latLng = new LatLng(lat, lng);
+            startLatLng = new LatLng(lat, lng);
 
+            lat = jsonObject.getJSONObject("end_location").getDouble("lat");
+            lng = jsonObject.getJSONObject("end_location").getDouble("lng");
+            endLatLng = new LatLng(lat, lng);
 
             if(jsonObject.has("maneuver")) {
 

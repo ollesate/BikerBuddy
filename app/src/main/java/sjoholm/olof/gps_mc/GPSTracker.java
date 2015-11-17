@@ -51,7 +51,15 @@ public class GPSTracker extends Service implements LocationListener {
         //getLastKnownLocation();
     }
 
+    private long prevTime = -1;
+
     public void setUpdateRate(long seconds){
+
+        if(prevTime == seconds)
+            return;
+
+        prevTime = seconds;
+
         MIN_TIME_BW_UPDATES = seconds * 1000;
 
         locationManager.removeUpdates(this);
