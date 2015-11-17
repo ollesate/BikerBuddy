@@ -1,7 +1,6 @@
 package sjoholm.olof.gps_mc;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -30,6 +29,11 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         controller = new Controller(this);
+
+        //Logga all ny information
+        FileLog.LogFromFile(this);
+        //Skapa ny session
+        FileLog.NewSession(this);
     }
 
     @Override
@@ -45,6 +49,13 @@ public class MainActivity extends ActionBarActivity {
 
         }
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        FileLog.WriteToFile(this);
     }
 
     @Override

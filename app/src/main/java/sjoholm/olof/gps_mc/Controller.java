@@ -165,8 +165,6 @@ public class Controller {
                 }else{
                     return true;
                 }
-            }else{
-
             }
         }
         return false;
@@ -229,9 +227,22 @@ public class Controller {
 
     private void GPS_OnUpdate(Location location){
 
-        runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m.", Toast.LENGTH_LONG));
+        LatLng currentPoint = new LatLng(location.getLatitude(), location.getLongitude());
 
-        FileLog.d("GPS", "Location update with accuracy " + location.getAccuracy() + " m.");
+        if(getNextPoint() == null) {
+            runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m. Speed is " + location.getSpeed() + ".", Toast.LENGTH_LONG));
+        }
+        else{
+            if(location.hasSpeed()){
+                float estimatedTimeToDest = getDistance(currentPoint, getNextPoint()) / location.getSpeed();
+                runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m. Speed is "
+                        + location.getSpeed() + " m/s. Estimated time to destination " + estimatedTimeToDest + "s.", Toast.LENGTH_LONG));
+            }else{
+                runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m. Speed is " + location.getSpeed() + " m/s.", Toast.LENGTH_LONG));
+            }
+        }
+
+        FileLog.d("GPS", "Location update with accuracy " + location.getAccuracy() + " m. Speed is " + location.getSpeed() + ".");
 
         //Korrigera bara kartan när en person inte har lagt ut någon rutt
         if(!googleMapFragment.hasPath()){
@@ -240,6 +251,15 @@ public class Controller {
         }
 
     }
+
+    private float getDistance(LatLng p1, LatLng p2){
+        return (float) Math.sqrt(Math.pow(p1.latitude-p2.latitude, 2) + Math.pow(p1.longitude-p2.longitude, 2));
+    }
+
+    private LatLng getNextPoint(){
+        return (directions == null || directions.size() < 2) ? null : directions.get(1).getLatLng();
+    }
+
 
     public void StartSetupFragment(){
         replaceFragment(simpleBluetoothConnectFragment);
@@ -257,14 +277,6 @@ public class Controller {
 
     public void replaceFragment(Fragment fragment, int id){
         context.getSupportFragmentManager().beginTransaction().replace(id, fragment).commit();
-    }
-
-    public void MapClick(LatLng latLng){
-
-    }
-
-    public void AutocompleteClick(){
-        //TODO
     }
 
     private void sendGoogleDirectionRequest(LatLng originCoord, LatLng destinationCoord){
@@ -285,9 +297,14 @@ public class Controller {
 
     }
 
+    ArrayList<Direction> directions;
+
     private void onGoogleDirectionResult(ArrayList<Direction> dirs){
+        directions = dirs;
         for(Direction d : dirs)
             Log.d("Controller", d.toString());
+
+        googleMapFragment.drawNavigationPath(dirs);
     }
 
 }

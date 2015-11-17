@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import sjoholm.olof.gps_mc.FileLog;
 import sjoholm.olof.gps_mc.R;
 
 /**
@@ -30,7 +31,6 @@ public class MainFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
 
-
-
     }
+
 }

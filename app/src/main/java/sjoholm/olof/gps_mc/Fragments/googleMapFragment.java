@@ -20,6 +20,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -79,7 +80,18 @@ public class googleMapFragment extends Fragment {
         mapView.onCreate(savedInstanceState);
 
         // Gets to GoogleMap from the MapView and does initialization stuff
-        map = mapView.getMap();
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                initializeMap(googleMap);
+            }
+        });
+
+        return v;
+    }
+
+    private void initializeMap(GoogleMap m) {
+        this.map = m;
         map.getUiSettings().setMyLocationButtonEnabled(false);
         map.setMyLocationEnabled(true);
         map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
@@ -89,29 +101,30 @@ public class googleMapFragment extends Fragment {
             }
         });
 
+        if(mapClickListener != null)
+            map.setOnMapClickListener(mapClickListener);
+
         MapsInitializer.initialize(this.getActivity());
 
         Bundle bundle = getArguments();
 
         if(bundle != null){
 
-            if(bundle.containsKey(BUNDLE_ZOOM))
-                zoomMap(    bundle.getFloat(BUNDLE_ZOOM)    );
-
-            if(bundle.containsKey(BUNDLE_LATLNG))
+            if(bundle.containsKey(BUNDLE_LATLNG)) {
                 setLocationMap((LatLng) bundle.get(BUNDLE_LATLNG));
+            }
+
+            if(bundle.containsKey(BUNDLE_ZOOM)) {
+                zoomMap(bundle.getFloat(BUNDLE_ZOOM));
+            }
 
         }
 
-
-        return v;
     }
 
     @Override
     public void onResume() {
         mapView.onResume();
-        if(mapClickListener != null)
-            map.setOnMapClickListener(mapClickListener);
         super.onResume();
     }
 
@@ -177,12 +190,19 @@ public class googleMapFragment extends Fragment {
     }
 
     public void drawNavigationPath(ArrayList<Direction> list){
+        map.clear();
+
         PolylineOptions rectLine = new PolylineOptions().width(5).color(Color.RED);
+
+        LatLng endPoint = null;
 
         for(Direction dir : list){
             List<LatLng> lineList = PolyUtil.decode(dir.getPolyLineEncoded());
             rectLine.addAll(lineList);
+            endPoint = lineList.get(lineList.size()-1);
         }
+
+        map.addMarker(new MarkerOptions().position(endPoint));
 
         map.addPolyline(rectLine);
     }

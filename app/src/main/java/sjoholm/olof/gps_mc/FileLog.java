@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Calendar;
 
 /**
  * Created by olof on 2015-11-16.
@@ -20,22 +21,29 @@ public class FileLog {
     private static String LOG;
 
     public static void d(String tag, String text){
+        Calendar c = Calendar.getInstance();
+
         Log.d(tag, text);
-        LOG = tag + ":" + text + "\n";
+        LOG += "<- " + c.getTime().toString() + " -> " + tag + ": " + text + "\n";
     }
 
-    public static void LogToFile(Context context){
+    public static void NewSession(Context context){
+        LOG += "NEW SESSION \n";
+    }
+
+    public static void WriteToFile(Context context){
+        LOG += "\n\n"; //Radbryten
         writeToFile(LOG, context);
     }
 
-    public static void Log(Context context){
+    public static void LogFromFile(Context context){
         Log.i("USER_DEBUG_LOG", readFromFile(context));
     }
 
     private static void writeToFile(String data, Context context) {
         try {
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(DEBUG_LOG, Context.MODE_PRIVATE));
-            outputStreamWriter.write(data);
+            outputStreamWriter.append(data);
             outputStreamWriter.close();
         }
         catch (IOException e) {
@@ -58,7 +66,7 @@ public class FileLog {
                 StringBuilder stringBuilder = new StringBuilder();
 
                 while ( (receiveString = bufferedReader.readLine()) != null ) {
-                    stringBuilder.append(receiveString);
+                    stringBuilder.append(receiveString + "\n");
                 }
 
                 inputStream.close();

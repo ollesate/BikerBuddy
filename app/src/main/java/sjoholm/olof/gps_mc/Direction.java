@@ -3,6 +3,8 @@ package sjoholm.olof.gps_mc;
 import android.content.ContentValues;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,6 +19,16 @@ public class Direction{
     private String maneuver;
     private String htmlInstructions;
     private String polyLineEncoded;
+
+    public LatLng getLatLng() {
+        return latLng;
+    }
+
+    public void setLatLng(LatLng latLng) {
+        this.latLng = latLng;
+    }
+
+    private LatLng latLng;
 
     //private ContentValues val = new ContentValues().
 
@@ -69,6 +81,12 @@ public class Direction{
         try {
 
             htmlInstructions = jsonObject.getString("html_instructions");
+
+            //Hämta coords
+            double lat = jsonObject.getJSONObject("start_location").getDouble("lat");
+            double lng = jsonObject.getJSONObject("start_location").getDouble("lng");
+            latLng = new LatLng(lat, lng);
+
 
             if(jsonObject.has("maneuver")) {
 
