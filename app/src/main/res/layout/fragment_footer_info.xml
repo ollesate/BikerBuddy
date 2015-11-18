@@ -16,8 +16,8 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:id="@+id/tvDistance"
-        android:paddingEnd="5dp"
-        android:paddingStart="5dp" />
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -31,6 +31,22 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:id="@+id/tvTime"
-        android:paddingStart="5dp"
-        android:paddingEnd="5dp" />
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="speed:"
+        android:id="@+id/textView3" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/tvSpeed"
+        android:paddingRight="5dp"
+        android:paddingLeft="5dp" />
+
 </LinearLayout>

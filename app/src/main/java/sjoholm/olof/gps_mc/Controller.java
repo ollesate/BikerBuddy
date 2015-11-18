@@ -52,8 +52,6 @@ public class Controller {
         initializeFragments();
         initializeGPS(context);
 
-
-
         Bluetooth_TryFind_HC06();
     }
 
@@ -232,7 +230,7 @@ public class Controller {
 
     private long prevTime = 0;
 
-    private void GPS_OnUpdate(Location location){
+    private void GPS_OnUpdate(final Location location){
 
         LatLng currentPoint = new LatLng(location.getLatitude(), location.getLongitude());
 
@@ -243,16 +241,16 @@ public class Controller {
             final float dist= getDistance(currentPoint, getNextPoint());
 
             final float estimatedTimeToDest = dist / location.getSpeed();
-            runToastOnGui(Toast.makeText(context,
-                    "Location update with accuracy " + location.getAccuracy() + " m. " +
-                            "Speed is " + location.getSpeed() + " m/s. " +
-                            "Distance to target is  " + dist + " m. " +
-                            "Estimated time to destination " + estimatedTimeToDest + "s.", Toast.LENGTH_LONG));
+//            runToastOnGui(Toast.makeText(context,
+//                    "Location update with accuracy " + location.getAccuracy() + " m. " +
+//                            "Speed is " + location.getSpeed() + " m/s. " +
+//                            "Distance to target is  " + dist + " m. " +
+//                            "Estimated time to destination " + estimatedTimeToDest + "s.", Toast.LENGTH_LONG));
 
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    footerInfoFragment.updateValues(dist + " m.", estimatedTimeToDest + " m/s.");
+                    footerInfoFragment.updateValues(Math.round(dist) + " m.", estimatedTimeToDest + " s.", location.getSpeed() + " m/s.");
                 }
             });
 

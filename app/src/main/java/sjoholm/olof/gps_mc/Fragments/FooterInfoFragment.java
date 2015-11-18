@@ -22,6 +22,7 @@ public class FooterInfoFragment extends Fragment {
 
     private TextView tvDestination;
     private TextView tvTime;
+    private TextView tvSpeed;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -34,10 +35,12 @@ public class FooterInfoFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         tvDestination = (TextView) view.findViewById(R.id.tvDistance);
         tvTime = (TextView) view.findViewById(R.id.tvTime);
+        tvSpeed = (TextView) view.findViewById(R.id.tvSpeed);
     }
 
-    public void updateValues(String distance, String time){
+    public void updateValues(String distance, String time, String speed){
         tvDestination.setText(distance);
         tvTime.setText(time);
+        tvSpeed.setText(speed);
     }
 }
