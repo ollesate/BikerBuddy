@@ -200,6 +200,7 @@ public class Controller {
 
     }
 
+
     private void Bluetooth_TryFind_HC06(){
 
         if(checkBluetoothReady()){
