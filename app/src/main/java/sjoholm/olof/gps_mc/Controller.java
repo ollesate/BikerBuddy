@@ -257,6 +257,10 @@ public class Controller {
                 }
             });
 
+            if(estimatedTimeToDest < 10){
+                runToastOnGui(Toast.makeText(context, directions.get(0).getManeuver(), Toast.LENGTH_LONG));
+            }
+
             if(dist < 50){
                 gps.setUpdateRate(0);
             }else if(dist < 100){
