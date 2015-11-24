@@ -230,19 +230,26 @@ public class Controller {
     }
 
     private long prevTime = 0;
+    private int numberOfTries;
 
     private void GPS_OnUpdate(final Location location){
 
 
 
-        LatLng currentPoint = new LatLng(location.getLatitude(), location.getLongitude());
-        final float dist= getDistance(currentPoint, getNextPoint());
-        final float estimatedTimeToDest = dist / location.getSpeed();
+
 
         if(getNextPoint() == null) {
             runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m. Speed is " + location.getSpeed() + ".", Toast.LENGTH_LONG));
         }
         else{
+
+            LatLng currentPoint = new LatLng(location.getLatitude(), location.getLongitude());
+            final float dist= getDistance(currentPoint, getNextPoint());
+            final float estimatedTimeToDest = dist / location.getSpeed();
+
+            if(estimatedTimeToDest < 10){
+                runToastOnGui(Toast.makeText(context, directions.get(0).getManeuver(), Toast.LENGTH_LONG));
+            }
 
 //            runToastOnGui(Toast.makeText(context,
 //                    "Location update with accuracy " + location.getAccuracy() + " m. " +
@@ -257,49 +264,50 @@ public class Controller {
                 }
             });
 
-            if(estimatedTimeToDest < 10){
-                runToastOnGui(Toast.makeText(context, directions.get(0).getManeuver(), Toast.LENGTH_LONG));
-            }
+            if(directions != null) {
 
-            if(dist < 50){
-                gps.setUpdateRate(0);
-            }else if(dist < 100){
-                gps.setUpdateRate(2);
-            }else if(dist < 200) {
-                gps.setUpdateRate(5);
-            }else {
-                gps.setUpdateRate(10);
-            }
-
-        }
-
-        FileLog.d("GPS", "Location update with accuracy " + location.getAccuracy() + " m. Speed is " + location.getSpeed() + ".");
-
-
-        if(directions != null) {
-
-            if(dist < 10){
-                sendGoogleDirectionRequest(
-                        new LatLng(location.getLatitude(), location.getLongitude()),
-                        directions.get(directions.size() - 1).getEndLatLng()
-                );
-                prevTime = location.getTime();
-            }
-
-            if (prevTime == 0) {
-                prevTime = location.getTime();
-            } else {
-                if (Calendar.getInstance().getTime().getTime() - prevTime > 15000) {
-                    //Update map
+                if(dist < 10){
                     sendGoogleDirectionRequest(
                             new LatLng(location.getLatitude(), location.getLongitude()),
                             directions.get(directions.size() - 1).getEndLatLng()
                     );
                     prevTime = location.getTime();
                 }
+
+                if (prevTime == 0) {
+                    prevTime = location.getTime();
+                } else {
+                    if (Calendar.getInstance().getTime().getTime() - prevTime > 15000) {
+                        //Update map
+                        sendGoogleDirectionRequest(
+                                new LatLng(location.getLatitude(), location.getLongitude()),
+                                directions.get(directions.size() - 1).getEndLatLng()
+                        );
+                        prevTime = location.getTime();
+                    }
+                }
+            }
+
+            if(location.getAccuracy() > 10 && numberOfTries < 4){
+                numberOfTries++;
+                gps.setUpdateRate(0);
+            }else {
+                numberOfTries = 0;
+
+                if (dist < 50) {
+                    gps.setUpdateRate(0);
+                } else if (dist < 100) {
+                    gps.setUpdateRate(2);
+                } else if (dist < 200) {
+                    gps.setUpdateRate(5);
+                } else {
+                    gps.setUpdateRate(10);
+                }
+
             }
         }
 
+        FileLog.d("GPS", "Location update with accuracy " + location.getAccuracy() + " m. Speed is " + location.getSpeed() + ".");
     }
 
     private float getDistance(LatLng p1, LatLng p2){
