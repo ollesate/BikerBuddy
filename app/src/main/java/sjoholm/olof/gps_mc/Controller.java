@@ -232,15 +232,17 @@ public class Controller {
 
     private void GPS_OnUpdate(final Location location){
 
+
+
         LatLng currentPoint = new LatLng(location.getLatitude(), location.getLongitude());
+        final float dist= getDistance(currentPoint, getNextPoint());
+        final float estimatedTimeToDest = dist / location.getSpeed();
 
         if(getNextPoint() == null) {
             runToastOnGui(Toast.makeText(context, "Location update with accuracy " + location.getAccuracy() + " m. Speed is " + location.getSpeed() + ".", Toast.LENGTH_LONG));
         }
         else{
-            final float dist= getDistance(currentPoint, getNextPoint());
 
-            final float estimatedTimeToDest = dist / location.getSpeed();
 //            runToastOnGui(Toast.makeText(context,
 //                    "Location update with accuracy " + location.getAccuracy() + " m. " +
 //                            "Speed is " + location.getSpeed() + " m/s. " +
@@ -254,9 +256,13 @@ public class Controller {
                 }
             });
 
-            if(dist < 100){
+            if(dist < 50){
                 gps.setUpdateRate(0);
-            }else{
+            }else if(dist < 100){
+                gps.setUpdateRate(2);
+            }else if(dist < 200) {
+                gps.setUpdateRate(5);
+            }else {
                 gps.setUpdateRate(10);
             }
 
@@ -266,6 +272,15 @@ public class Controller {
 
 
         if(directions != null) {
+
+            if(dist < 10){
+                sendGoogleDirectionRequest(
+                        new LatLng(location.getLatitude(), location.getLongitude()),
+                        directions.get(directions.size() - 1).getEndLatLng()
+                );
+                prevTime = location.getTime();
+            }
+
             if (prevTime == 0) {
                 prevTime = location.getTime();
             } else {
