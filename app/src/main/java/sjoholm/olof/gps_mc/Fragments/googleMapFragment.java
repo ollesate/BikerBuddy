@@ -108,9 +108,7 @@ public class googleMapFragment extends Fragment {
         MapsInitializer.initialize(this.getActivity());
 
         GPSTracker gps = GPSTracker.Singleton.getInstance(getActivity());
-        setLocationMap(gps.getLatLng());
-        zoomMap(15.0f);
-
+        ZoomToLocation(gps.getLatLng(), 15.0f);
 
     }
 
@@ -179,6 +177,10 @@ public class googleMapFragment extends Fragment {
 
         CameraUpdate upd = CameraUpdateFactory.newLatLng(latLng);
         map.moveCamera(upd);
+    }
+
+    public void ZoomToLocation(LatLng latLng, float zoom){
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
     }
 
     public void drawNavigationPath(ArrayList<Direction> list){
