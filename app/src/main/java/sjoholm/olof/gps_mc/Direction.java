@@ -85,9 +85,9 @@ public class Direction{
     @Override
     public String toString() {
         if(maneuver.equals("drive-straight"))
-            return "drive straight for" + distanceText + ".";
+            return "drive straight for " + distanceText + ".";
         else
-            return "drive " + distanceText + ", then " +maneuver;
+            return maneuver + " then drive " + distanceText + ".";
     }
 
     public Direction(JSONObject jsonObject){
