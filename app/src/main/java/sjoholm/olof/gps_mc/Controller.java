@@ -89,6 +89,7 @@ public class Controller {
             @Override
             public void onClick(View view) {
                 StartMainFragment();
+                HC06_Connect();
             }
         });
 
@@ -125,11 +126,11 @@ public class Controller {
                     case BluetoothHandler.CONNECTED:
                         runToastOnGui(connectionToast, "Connection!");
                         simpleBluetoothConnectFragment.lockButton(false);
-                        StartMainFragment();
                         break;
                     case BluetoothHandler.FAILED_CONNECTING:
                         runToastOnGui(connectionToast, "Connection failed");
                         simpleBluetoothConnectFragment.lockButton(false);
+                        HC06_Connect();
                         break;
                     case BluetoothHandler.DISCONNECTED:
                         runToastOnGui(connectionToast, "Connection disconnected");
@@ -235,7 +236,7 @@ public class Controller {
     private long prevTime = 0;
     private int numberOfTries;
     private boolean showedDestination;
-    private String prevDestinationID;
+    private String prevDestinationID = "";
 
     private void GPS_OnUpdate(final Location location){
         FileLog.d("GPS_UPDATE", "Location update with accuracy " + location.getAccuracy() + " m. " + "Latlng is " + location.getLatitude() + "," + location.getLongitude());
@@ -262,8 +263,10 @@ public class Controller {
 
             prevDestinationID = directions.get(0).getHtmlInstructions();
 
-            if(directions.size() > 1)
+            if(directions.size() > 1) {
+                signalNextManeuver();
                 runToastOnGui(Toast.makeText(context, directions.get(1).getManeuver(), Toast.LENGTH_SHORT));
+            }
             else runToastOnGui(Toast.makeText(context, "You have reached your destination.", Toast.LENGTH_SHORT));
         }
 
@@ -320,6 +323,11 @@ public class Controller {
         }
 
 
+
+    }
+
+    private void signalNextManeuver(){
+        bl_handler.send(directions.get(1).BlueToothCode + "");
 
     }
 

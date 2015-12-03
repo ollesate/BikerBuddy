@@ -115,7 +115,7 @@ public class Direction{
                 maneuver = "drive-straight";
 
             }
-            
+
             switch (maneuver){
                 case "turn-left":
                     BlueToothCode = 0;
