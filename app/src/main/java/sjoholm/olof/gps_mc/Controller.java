@@ -326,9 +326,9 @@ public class Controller {
 
     }
 
-    private void signalNextManeuver(){
-        bl_handler.send(directions.get(1).BlueToothCode + "");
-
+    public void signalNextManeuver(){
+        if(directions.size() > 1)
+            bl_handler.send(directions.get(1).BlueToothCode + "");
     }
 
     private float getDistance(LatLng p1, LatLng p2){
