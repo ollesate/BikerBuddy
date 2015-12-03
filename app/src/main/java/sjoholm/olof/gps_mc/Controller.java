@@ -2,10 +2,15 @@ package sjoholm.olof.gps_mc;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.Location;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -47,6 +52,8 @@ public class Controller {
     private FooterInfoFragment footerInfoFragment;
     private LocationBuffer locations;
 
+    private int SIGNAL_TIME_IN_ADVANCE = 10;
+
     public Controller(MainActivity context){
         this.context = context;
         initializeBluetooth();
@@ -54,6 +61,9 @@ public class Controller {
         initializeGPS(context);
 
         Bluetooth_TryFind_HC06();
+
+        //Subscribe to settings changed
+        LocalBroadcastManager.getInstance(context).registerReceiver(broadcastReciever, new IntentFilter("SETTINGS_UPDATED"));
     }
 
     private void initializeFragments() {
@@ -256,7 +266,7 @@ public class Controller {
         final float avarageSpeed = locations.getAverageSpeed();
 
 
-        if(estimatedTimeToDest < 10){
+        if(estimatedTimeToDest < SIGNAL_TIME_IN_ADVANCE){
 
             if(prevDestinationID.equals(directions.get(0).getHtmlInstructions()))
                 return;
@@ -384,6 +394,21 @@ public class Controller {
             Log.d("Controller", d.toString());
 
         googleMapFragment.drawNavigationPath(dirs);
+    }
+
+    private BroadcastReceiver broadcastReciever = new BroadcastReceiver(){
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("Broadcast", intent.getAction());
+            PopulateFromPreferences();
+        }
+    };
+
+    private void PopulateFromPreferences(){
+        Log.d("Pref", "Updating preferences");
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SIGNAL_TIME_IN_ADVANCE =   Integer.parseInt(prefs.getString("pref1", String.valueOf(SIGNAL_TIME_IN_ADVANCE)));
     }
 
 }

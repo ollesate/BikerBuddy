@@ -1,9 +1,15 @@
 package sjoholm.olof.gps_mc;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -34,6 +40,11 @@ public class MainActivity extends ActionBarActivity {
         FileLog.LogFromFile(this);
         //Skapa ny session
         FileLog.NewSession(this);
+
+        String l = PreferenceManager.getDefaultSharedPreferences(this).getString("pref1", "no value");
+        Log.d("pref", l);
+
+
     }
 
     @Override
@@ -87,9 +98,13 @@ public class MainActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             controller.signalNextManeuver();
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+
 }
