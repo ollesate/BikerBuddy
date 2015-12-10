@@ -64,6 +64,9 @@ public class Controller {
 
         //Subscribe to settings changed
         LocalBroadcastManager.getInstance(context).registerReceiver(broadcastReciever, new IntentFilter("SETTINGS_UPDATED"));
+
+        //Dum kod
+        prevSignalTime = Calendar.getInstance().getTime().getTime();
     }
 
     private void initializeFragments() {
@@ -251,6 +254,9 @@ public class Controller {
     private float SECONDS = 1000;
     private float GMAPS_UPDATE_DELAY = 15*SECONDS;
 
+    private float prevSignalTime = 0;
+    private float signalCooldown = 3*SECONDS;
+
     private void GPS_OnUpdate(final Location location){
         FileLog.d("GPS_UPDATE", "Location update with accuracy " + location.getAccuracy() + " m. " + "Latlng is " + location.getLatitude() + "," + location.getLongitude());
         locations.Add(location);
@@ -271,9 +277,16 @@ public class Controller {
 
         if(estimatedTimeToDest < SIGNAL_TIME_IN_ADVANCE){
 
-            if(prevDestinationID.equals(directions.get(0).getHtmlInstructions()))
-                return;
+            if(prevDestinationID.equals(directions.get(0).getHtmlInstructions())) {
 
+                //Signalera bara var 3:e sekund
+                if (Calendar.getInstance().getTime().getTime() - prevSignalTime < signalCooldown) {
+                    return;
+                }
+
+            }
+
+            prevSignalTime = Calendar.getInstance().getTime().getTime();
             prevDestinationID = directions.get(0).getHtmlInstructions();
 
             if(directions.size() > 1) {
