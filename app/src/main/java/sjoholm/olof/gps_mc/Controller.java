@@ -248,6 +248,9 @@ public class Controller {
     private boolean showedDestination;
     private String prevDestinationID = "";
 
+    private float SECONDS = 1000;
+    private float GMAPS_UPDATE_DELAY = 15*SECONDS;
+
     private void GPS_OnUpdate(final Location location){
         FileLog.d("GPS_UPDATE", "Location update with accuracy " + location.getAccuracy() + " m. " + "Latlng is " + location.getLatitude() + "," + location.getLongitude());
         locations.Add(location);
@@ -293,18 +296,10 @@ public class Controller {
             }
         });
 
-        if(dist < 10){
-            sendGoogleDirectionRequest(
-                    new LatLng(location.getLatitude(), location.getLongitude()),
-                    directions.get(directions.size() - 1).getEndLatLng()
-            );
-            prevTime = location.getTime();
-        }
-
         if (prevTime == 0) {
             prevTime = location.getTime();
         } else {
-            if (Calendar.getInstance().getTime().getTime() - prevTime > 15000) {
+            if (Calendar.getInstance().getTime().getTime() - prevTime > GMAPS_UPDATE_DELAY) {
                 //Update map
                 sendGoogleDirectionRequest(
                         new LatLng(location.getLatitude(), location.getLongitude()),
@@ -319,15 +314,19 @@ public class Controller {
             gps.setUpdateRate(0);
         }else {
             numberOfTries = 0;
-
-            if (dist < 50) {
+            float str = 2;
+            if (dist < 50*str) {
                 gps.setUpdateRate(0);
-            } else if (dist < 100) {
+                GMAPS_UPDATE_DELAY = 3*SECONDS;
+            } else if (dist < 100*str) {
                 gps.setUpdateRate(2);
-            } else if (dist < 200) {
+                GMAPS_UPDATE_DELAY = 6*SECONDS;
+            } else if (dist < 200*str) {
                 gps.setUpdateRate(5);
+                GMAPS_UPDATE_DELAY = 9*SECONDS;
             } else {
                 gps.setUpdateRate(10);
+                GMAPS_UPDATE_DELAY = 15*SECONDS;
             }
 
         }
