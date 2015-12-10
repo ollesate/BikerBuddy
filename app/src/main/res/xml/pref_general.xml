@@ -9,14 +9,14 @@
         android:singleLine="true"
         android:maxLines="1" />
 
-    <ListPreference
+    <EditTextPreference
         android:key="pref2"
-        android:title="Signal color"
-        android:entries="@array/pref_signal_color"
-        android:entryValues="@array/pref_signal_color"
-        android:defaultValue="180"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null" />
+        android:title="Google maps update in seconds"
+        android:defaultValue="10"
+        android:selectAllOnFocus="true"
+        android:numeric="integer"
+        android:singleLine="true"
+        android:maxLines="1" />
 
 
 

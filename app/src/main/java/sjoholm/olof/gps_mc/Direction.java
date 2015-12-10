@@ -118,10 +118,10 @@ public class Direction{
 
             switch (maneuver){
                 case "turn-left":
-                    BlueToothCode = 0;
+                    BlueToothCode = 1;
                     break;
                 case "turn-right":
-                    BlueToothCode = 1;
+                    BlueToothCode = 0;
                     break;
                 case "roundabout-right":
                     BlueToothCode = 2;

@@ -119,7 +119,7 @@ public class Controller {
             }
         });
         gps.getLastKnownLocation();
-        gps.setUpdateRate(10);
+        gps.setUpdateRate(0);
     }
 
     private void initializeBluetooth(){
@@ -252,10 +252,11 @@ public class Controller {
     private String prevDestinationID = "";
 
     private float SECONDS = 1000;
-    private float GMAPS_UPDATE_DELAY = 15*SECONDS;
+    private float GMAPS_UPDATE_DELAY = 6*SECONDS;
+    private float GMAPS_STR = 1.0f;
 
     private float prevSignalTime = 0;
-    private float signalCooldown = 3*SECONDS;
+    private float signalCooldown = 6*SECONDS;
 
     private void GPS_OnUpdate(final Location location){
         FileLog.d("GPS_UPDATE", "Location update with accuracy " + location.getAccuracy() + " m. " + "Latlng is " + location.getLatitude() + "," + location.getLongitude());
@@ -274,16 +275,16 @@ public class Controller {
         final float dist = locations.DistanceToDestination(destination);
         final float avarageSpeed = locations.getAverageSpeed();
 
+        GMAPS_STR = 1.0f;
 
         if(estimatedTimeToDest < SIGNAL_TIME_IN_ADVANCE){
 
             if(prevDestinationID.equals(directions.get(0).getHtmlInstructions())) {
-
+                GMAPS_STR = .5f;
                 //Signalera bara var 3:e sekund
                 if (Calendar.getInstance().getTime().getTime() - prevSignalTime < signalCooldown) {
                     return;
                 }
-
             }
 
             prevSignalTime = Calendar.getInstance().getTime().getTime();
@@ -296,6 +297,7 @@ public class Controller {
             else runToastOnGui(Toast.makeText(context, "You have reached your destination.", Toast.LENGTH_SHORT));
         }
 
+
 //            runToastOnGui(Toast.makeText(context,
 //                    "Location update with accuracy " + location.getAccuracy() + " m. " +
 //                            "Speed is " + location.getSpeed() + " m/s. " +
@@ -305,14 +307,14 @@ public class Controller {
         context.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                footerInfoFragment.updateValues(Math.round(dist) + " m.", estimatedTimeToDest + " s.", avarageSpeed + " m/s.");
+                footerInfoFragment.updateValues(Math.round(dist) + " m.", Math.round(estimatedTimeToDest) + " s.", Math.round(avarageSpeed * 10) / 10 + " m/s.");
             }
         });
 
         if (prevTime == 0) {
             prevTime = location.getTime();
         } else {
-            if (Calendar.getInstance().getTime().getTime() - prevTime > GMAPS_UPDATE_DELAY) {
+            if (Calendar.getInstance().getTime().getTime() - prevTime > GMAPS_UPDATE_DELAY * GMAPS_STR) {
                 //Update map
                 sendGoogleDirectionRequest(
                         new LatLng(location.getLatitude(), location.getLongitude()),
@@ -322,27 +324,28 @@ public class Controller {
             }
         }
 
-        if(location.getAccuracy() > 10 && numberOfTries < 4){
-            numberOfTries++;
-            gps.setUpdateRate(0);
-        }else {
-            numberOfTries = 0;
-            float str = 2;
-            if (dist < 50*str) {
-                gps.setUpdateRate(0);
-                GMAPS_UPDATE_DELAY = 3*SECONDS;
-            } else if (dist < 100*str) {
-                gps.setUpdateRate(2);
-                GMAPS_UPDATE_DELAY = 6*SECONDS;
-            } else if (dist < 200*str) {
-                gps.setUpdateRate(5);
-                GMAPS_UPDATE_DELAY = 9*SECONDS;
-            } else {
-                gps.setUpdateRate(10);
-                GMAPS_UPDATE_DELAY = 15*SECONDS;
-            }
 
-        }
+//        if(location.getAccuracy() > 10 && numberOfTries < 4){
+//            numberOfTries++;
+//            gps.setUpdateRate(0);
+//        }else {
+//            numberOfTries = 0;
+//            float str = 2;
+//            if (dist < 50*str) {
+//                gps.setUpdateRate(0);
+//                GMAPS_UPDATE_DELAY = 3*SECONDS;
+//            } else if (dist < 100*str) {
+//                gps.setUpdateRate(2);
+//                GMAPS_UPDATE_DELAY = 6*SECONDS;
+//            } else if (dist < 200*str) {
+//                gps.setUpdateRate(5);
+//                GMAPS_UPDATE_DELAY = 9*SECONDS;
+//            } else {
+//                gps.setUpdateRate(10);
+//                GMAPS_UPDATE_DELAY = 15*SECONDS;
+//            }
+//
+//        }
 
 
 
@@ -418,9 +421,12 @@ public class Controller {
     };
 
     private void PopulateFromPreferences(){
-        Log.d("Pref", "Updating preferences");
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SIGNAL_TIME_IN_ADVANCE =   Integer.parseInt(prefs.getString("pref1", String.valueOf(SIGNAL_TIME_IN_ADVANCE)));
+        GMAPS_UPDATE_DELAY =   Integer.parseInt(prefs.getString("pref2", String.valueOf(GMAPS_UPDATE_DELAY)));
+        Log.d("Pref", "Updating preferences");
+        Log.d("Pref2", GMAPS_UPDATE_DELAY +" seconds");
     }
 
 }
